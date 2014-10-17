@@ -26,16 +26,9 @@ public class ServerWalletFacade {
 		mServerWalletAppKit.awaitTerminated();
 	}
 	
-	public int getBlockCount() {
+	public int getBlockCount() throws BlockStoreException {
 		
-		try {
-			return mServerWalletAppKit.chain().getBlockStore().getChainHead().getHeight();
-		} catch (BlockStoreException e) {
-			
-			e.printStackTrace();
-			
-			return -1;
-		}
+		return mServerWalletAppKit.chain().getBlockStore().getChainHead().getHeight();
 	}
 
 	public String getBalance(final BalanceType pBalanceType) {
@@ -43,37 +36,44 @@ public class ServerWalletFacade {
 		return mServerWalletAppKit.wallet().getBalance(pBalanceType).toPlainString();
 	}
 
-	public String encryptWallet(final String pPassphrase) {
+	public boolean encryptWallet(final String pPassphrase) {
 		
 		if(mServerWalletAppKit.wallet().isEncrypted()){
 					
-			return "Wallet is already encrypted! Call -decryptwallet first.";
+			return false;
 			
 		}else{
 		
 			mServerWalletAppKit.wallet().encrypt(pPassphrase);
 			
-			return "Wallet is now encrypted!";
+			return true;
 		}
 	}
 	
-	public String decryptWallet(final String pPassphrase) {
+	public boolean decryptWallet(final String pPassphrase) {
 		
 		if(mServerWalletAppKit.wallet().isEncrypted()){
 		
 			try{
 			
 				mServerWalletAppKit.wallet().decrypt(pPassphrase);
-				return "Wallet is now decrypted!";
-								
+				
+				return true;
+				
 			}catch(KeyCrypterException e){
 				
-				return e.getMessage();
+				e.printStackTrace();
+				return false;
 			}
 			
 		}else{
 			
-			return "Wallet is unencrypted! You have to -encryptwallet first.";
+			return false;
 		}
+	}
+
+	public boolean isWalletEncrypted() {
+		
+		return mServerWalletAppKit.wallet().isEncrypted();
 	}
 }

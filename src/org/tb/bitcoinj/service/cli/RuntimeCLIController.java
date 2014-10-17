@@ -14,6 +14,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.bitcoinj.core.Wallet.BalanceType;
+import org.bitcoinj.store.BlockStoreException;
 import org.tb.bitcoinj.service.server.ServerWalletFacade;
 
 /**
@@ -30,6 +31,7 @@ public class RuntimeCLIController extends AbsCLIParser{
 		getbalance, // opt. args AVAILABLE, ESTIMATED
 		encryptwallet, // arg "passphrase"
 		decryptwallet, // arg "passphrase"
+		iswalletencrypted,
 		// unimplemented options
 		getdifficulty,
 		addmultisigaddress, // nrequired ["key",...] ( "account" )
@@ -41,7 +43,6 @@ public class RuntimeCLIController extends AbsCLIParser{
 		decodescript,// "hex"
 		dumpprivkey,// "bitcoinaddress"
 		dumpwallet,// "filename"
-		
 		getaccount,// "bitcoinaddress"
 		getaccountaddress,// "account"
 		getaddednodeinfo,// dns ( "node" )
@@ -195,16 +196,43 @@ public class RuntimeCLIController extends AbsCLIParser{
 			
 			handleWalletDecryption(pCommandLine.getOptionValue(CLIrpc.decryptwallet.name()));
 		}
+		
+		if(pCommandLine.hasOption(CLIrpc.iswalletencrypted.name())){
+			
+			handleIsWalletEncrypted();
+		}
+	}
+
+	private void handleIsWalletEncrypted() {
+		
+		System.out.println(mServerWalletFacade.isWalletEncrypted());
 	}
 
 	private void handleWalletEncryption(final String pPassphrase) {
 		
-		System.out.println(mServerWalletFacade.encryptWallet(pPassphrase));
+		if(mServerWalletFacade.encryptWallet(pPassphrase)){
+			
+			System.out.println("Wallet successfully encrypted!");	
+		
+		}else{
+		
+			System.out.println("Wallet encryption failed! Maybe the wallet "
+								+ "already is encrypted?");	
+		}
 	}
 
 	private void handleWalletDecryption(final String pPassphrase) {
 		
-		System.out.println(mServerWalletFacade.decryptWallet(pPassphrase));
+		if(mServerWalletFacade.decryptWallet(pPassphrase)){
+			
+			System.out.println("Wallet successfully decrypted!");	
+		
+		}else{
+			
+			System.out.println("Wallet decryption failed! Did you use the "
+								+ "correct passphrase? Maybe the wallet is not"
+								+ "encrypted at all?");	
+		}
 	}
 
 	private void handleGetBalance(final BalanceType pBalanceType) {
@@ -219,13 +247,18 @@ public class RuntimeCLIController extends AbsCLIParser{
 
 	private void handleGetBlockCount() {
 		
-		System.out.println(mServerWalletFacade.getBlockCount());
+		try {
+			System.out.println(mServerWalletFacade.getBlockCount());
+		} catch (BlockStoreException e) {
+
+			System.out.println(e.getMessage());
+		}
 	}
 
 	private void printHelp(){
 
 		final HelpFormatter helpFormatter = new HelpFormatter();
-		helpFormatter.printHelp(HelpFormatter.DEFAULT_SYNTAX_PREFIX, mCLIoptions);
+		helpFormatter.printHelp("ServerWalletApp", mCLIoptions);
 	}
 	
 	private void handleStop(){
@@ -240,22 +273,37 @@ public class RuntimeCLIController extends AbsCLIParser{
 	@Override
 	public void initCLI(Options pOptions) {
 		
-		pOptions.addOption("s", CLIrpc.stop.name(), false, "Stops the service and shuts down the program");
-		pOptions.addOption("h", CLIrpc.help.name(), false, "Print help");
-		pOptions.addOption("bc", CLIrpc.getblockcount.name(), false, "Prints the number of blocks processed");
-		pOptions.addOption("d", CLIrpc.getdifficulty.name(), false, "Prints the current diffituly");
+		pOptions.addOption(OptionBuilder.withDescription("Stops the wallet "
+														+ "service and shuts "
+														+ "down the program.")
+										.create(CLIrpc.stop.name()));
+		
+		pOptions.addOption(OptionBuilder.withDescription("Prints help information")
+										.create(CLIrpc.help.name()));
+		
+		pOptions.addOption(OptionBuilder.withDescription("Prints the number of "
+														+ "blocks processed")
+										.create(CLIrpc.getblockcount.name()));
+		
 		pOptions.addOption(OptionBuilder.hasOptionalArg()
 							.withDescription("Returns the current AVAILABLE "
 									+ "balance. You can also provide an optional"
 									+ " parameter ESTIMATED or AVAILABLE.")
 							.create(CLIrpc.getbalance.name()));
+		
 		pOptions.addOption(OptionBuilder.hasArg()
 							.withDescription("Encrypts the wallet with the given"
 									+ "passphrase.")
 							.create(CLIrpc.encryptwallet.name()));
+		
 		pOptions.addOption(OptionBuilder.hasArg()
 							.withDescription("Decrypts the wallet with the given"
 									+ "passphrase.")
 							.create(CLIrpc.decryptwallet.name()));
+		
+		pOptions.addOption(OptionBuilder.withDescription("Informs you about "
+														+ "wheter or not the"
+														+ " wallet is encrypted.")
+										.create(CLIrpc.iswalletencrypted.name()));
 	}
 }
