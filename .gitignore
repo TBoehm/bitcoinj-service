@@ -12,5 +12,7 @@
 hs_err_pid*
 /bin
 /target
-/walletappkit-server.spvchain
-/walletappkit-server.wallet
+
+// wallet files and spvchain files
+*.spvchain
+*.wallet

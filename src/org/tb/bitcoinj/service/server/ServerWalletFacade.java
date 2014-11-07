@@ -3,6 +3,15 @@
  */
 package org.tb.bitcoinj.service.server;
 
+import java.math.BigInteger;
+
+import javax.annotation.Nonnegative;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
+import org.bitcoinj.core.Coin;
 import org.bitcoinj.core.Wallet.BalanceType;
 import org.bitcoinj.crypto.KeyCrypterException;
 import org.bitcoinj.store.BlockStoreException;
@@ -31,12 +40,14 @@ public class ServerWalletFacade {
 		return mServerWalletAppKit.chain().getBlockStore().getChainHead().getHeight();
 	}
 
-	public String getBalance(final BalanceType pBalanceType) {
+	public Coin getBalance(final BalanceType pBalanceType) {
 		
-		return mServerWalletAppKit.wallet().getBalance(pBalanceType).toPlainString();
+		return mServerWalletAppKit.wallet().getBalance(pBalanceType);
 	}
-
+	
 	public boolean encryptWallet(final String pPassphrase) {
+		
+		checkArgument(pPassphrase != null);
 		
 		if(mServerWalletAppKit.wallet().isEncrypted()){
 					
@@ -51,6 +62,8 @@ public class ServerWalletFacade {
 	}
 	
 	public boolean decryptWallet(final String pPassphrase) {
+		
+		checkArgument(pPassphrase != null);
 		
 		if(mServerWalletAppKit.wallet().isEncrypted()){
 		
