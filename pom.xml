@@ -38,6 +38,11 @@
       <version>0.12</version>
     </dependency>
     <dependency>
+		<groupId>org.eclipse.jetty</groupId>
+		<artifactId>jetty-server</artifactId>
+		<version>9.3.0.M0</version>
+	</dependency>
+    <dependency>
     	<groupId>org.slf4j</groupId>
     	<artifactId>slf4j-simple</artifactId>
     	<version>1.7.7</version>

@@ -49,6 +49,5 @@ public class WalletListener extends AbstractWalletEventListener {
 	public void onKeysAdded(List<ECKey> keys) {
 		
 		System.out.println("new key added");
-
 	}
 }

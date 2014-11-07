@@ -20,6 +20,7 @@ import org.bitcoinj.store.BlockStoreException;
  * @author ToBe
  *
  */
+@SuppressWarnings("unused")
 public class ServerWalletFacade {
 
 	private final ServerWalletAppKit mServerWalletAppKit;
@@ -41,6 +42,8 @@ public class ServerWalletFacade {
 	}
 
 	public Coin getBalance(final BalanceType pBalanceType) {
+		
+		checkArgument(pBalanceType != null);
 		
 		return mServerWalletAppKit.wallet().getBalance(pBalanceType);
 	}

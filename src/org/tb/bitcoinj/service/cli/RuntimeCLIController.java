@@ -23,7 +23,7 @@ import org.tb.bitcoinj.service.server.ServerWalletFacade;
  */
 public class RuntimeCLIController extends AbsCLIParser{
 
-	private static enum CLIrpc{
+	private static enum CLIOption{
 		// implemented options
 		stop,
 		help,
@@ -106,11 +106,12 @@ public class RuntimeCLIController extends AbsCLIParser{
 	
 	
 	public RuntimeCLIController(final ServerWalletFacade pServerWalletFacade, final InputStream pCLIinputStream) {
-	
+		super();
+		
 		mServerWalletFacade = pServerWalletFacade;
 		
-		final InputStreamReader converter = new InputStreamReader(pCLIinputStream);
-	    final BufferedReader bufferedReader = new BufferedReader(converter);
+		final InputStreamReader inputStreamReader = new InputStreamReader(pCLIinputStream);
+	    final BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
 				
 		new Thread(new Runnable() {
 			
@@ -119,13 +120,15 @@ public class RuntimeCLIController extends AbsCLIParser{
 				
 				while(true){
 					
+					System.out.println("Waiting for input:");
+					
 					try {
 
 						// read/wait for new input
 						final String[] args = bufferedReader.readLine().split(" ");
 						
 						// parse the command line arguments
-						final CommandLine commandLine = mGNUcliParser.parse(mCLIoptions, args);
+						final CommandLine commandLine = mGNUcliParser.parse(mCLIoptions, args, true);
 						processCMDLine(commandLine);
 						
 					} catch (IOException e) {
@@ -134,6 +137,7 @@ public class RuntimeCLIController extends AbsCLIParser{
 				        System.err.println( "Reading console input failed.  Reason: " + e.getMessage() );
 						
 					}catch( ParseException exp ) {
+						
 				        // oops, something went wrong
 				        System.err.println( "Parsing failed.  Reason: " + exp.getMessage() );
 				    }
@@ -144,29 +148,29 @@ public class RuntimeCLIController extends AbsCLIParser{
 	
 	private void processCMDLine(final CommandLine pCommandLine) {
 				
-		if(pCommandLine.hasOption(CLIrpc.stop.name())){
+		if(pCommandLine.hasOption(CLIOption.stop.name())){
 			
 			handleStop();
 		}
 		
-		if(pCommandLine.hasOption(CLIrpc.getblockcount.name())){
+		if(pCommandLine.hasOption(CLIOption.getblockcount.name())){
 			
 			handleGetBlockCount();			
 		}
 		
-		if(pCommandLine.hasOption(CLIrpc.help.name())){
+		if(pCommandLine.hasOption(CLIOption.help.name())){
 			
 			printHelp();
 		}
 		
-		if(pCommandLine.hasOption(CLIrpc.getdifficulty.name())){
+		if(pCommandLine.hasOption(CLIOption.getdifficulty.name())){
 			
 			handleGetDifficulty();
 		}
 		
-		if(pCommandLine.hasOption(CLIrpc.getbalance.name())){
+		if(pCommandLine.hasOption(CLIOption.getbalance.name())){
 				
-			final String balanceTypeArg = pCommandLine.getOptionValue(CLIrpc.getbalance.name());
+			final String balanceTypeArg = pCommandLine.getOptionValue(CLIOption.getbalance.name());
 			if(balanceTypeArg != null){
 			
 				try{
@@ -187,17 +191,17 @@ public class RuntimeCLIController extends AbsCLIParser{
 			}
 		}
 		
-		if(pCommandLine.hasOption(CLIrpc.encryptwallet.name())){
+		if(pCommandLine.hasOption(CLIOption.encryptwallet.name())){
 			
-			handleWalletEncryption(pCommandLine.getOptionValue(CLIrpc.encryptwallet.name()));
+			handleWalletEncryption(pCommandLine.getOptionValue(CLIOption.encryptwallet.name()));
 		}
 		
-		if(pCommandLine.hasOption(CLIrpc.decryptwallet.name())){
+		if(pCommandLine.hasOption(CLIOption.decryptwallet.name())){
 			
-			handleWalletDecryption(pCommandLine.getOptionValue(CLIrpc.decryptwallet.name()));
+			handleWalletDecryption(pCommandLine.getOptionValue(CLIOption.decryptwallet.name()));
 		}
 		
-		if(pCommandLine.hasOption(CLIrpc.iswalletencrypted.name())){
+		if(pCommandLine.hasOption(CLIOption.iswalletencrypted.name())){
 			
 			handleIsWalletEncrypted();
 		}
@@ -237,7 +241,7 @@ public class RuntimeCLIController extends AbsCLIParser{
 
 	private void handleGetBalance(final BalanceType pBalanceType) {
 		
-		System.out.println(mServerWalletFacade.getBalance(pBalanceType));
+		System.out.println(mServerWalletFacade.getBalance(pBalanceType).toFriendlyString());
 	}
 
 	private void handleGetDifficulty() {
@@ -276,34 +280,34 @@ public class RuntimeCLIController extends AbsCLIParser{
 		pOptions.addOption(OptionBuilder.withDescription("Stops the wallet "
 														+ "service and shuts "
 														+ "down the program.")
-										.create(CLIrpc.stop.name()));
+										.create(CLIOption.stop.name()));
 		
 		pOptions.addOption(OptionBuilder.withDescription("Prints help information")
-										.create(CLIrpc.help.name()));
+										.create(CLIOption.help.name()));
 		
 		pOptions.addOption(OptionBuilder.withDescription("Prints the number of "
 														+ "blocks processed")
-										.create(CLIrpc.getblockcount.name()));
+										.create(CLIOption.getblockcount.name()));
 		
 		pOptions.addOption(OptionBuilder.hasOptionalArg()
 							.withDescription("Returns the current AVAILABLE "
 									+ "balance. You can also provide an optional"
 									+ " parameter ESTIMATED or AVAILABLE.")
-							.create(CLIrpc.getbalance.name()));
+							.create(CLIOption.getbalance.name()));
 		
 		pOptions.addOption(OptionBuilder.hasArg()
 							.withDescription("Encrypts the wallet with the given"
 									+ "passphrase.")
-							.create(CLIrpc.encryptwallet.name()));
+							.create(CLIOption.encryptwallet.name()));
 		
 		pOptions.addOption(OptionBuilder.hasArg()
 							.withDescription("Decrypts the wallet with the given"
 									+ "passphrase.")
-							.create(CLIrpc.decryptwallet.name()));
+							.create(CLIOption.decryptwallet.name()));
 		
 		pOptions.addOption(OptionBuilder.withDescription("Informs you about "
 														+ "wheter or not the"
 														+ " wallet is encrypted.")
-										.create(CLIrpc.iswalletencrypted.name()));
+										.create(CLIOption.iswalletencrypted.name()));
 	}
 }

@@ -67,8 +67,19 @@ public class ServerWalletFacadeTest {
 	@Test
 	public void testGetBalance() {
 		
+		// should be fine
 		Arrays.stream(BalanceType.values())
 				.forEach(balanceType -> Assert.assertTrue(mServerWalletFacade.getBalance(balanceType).longValue() >= 0));		
+	
+		// should fail
+		try{
+			
+			mServerWalletFacade.getBalance(null);
+			fail("GetBalance with null argument should not be possible.");
+		}catch(IllegalArgumentException e){
+			
+			// pass
+		}
 	}
 
 	

@@ -12,8 +12,8 @@ import org.apache.commons.cli.Options;
  */
 public abstract class AbsCLIParser {
 	
-	protected final GnuParser mGNUcliParser = new GnuParser();
-	protected final Options mCLIoptions = new Options();
+	protected volatile GnuParser mGNUcliParser = new GnuParser();
+	protected volatile Options mCLIoptions = new Options();
 	
 	public AbsCLIParser(){
 		

@@ -8,6 +8,7 @@ import java.io.File;
 import org.bitcoinj.core.NetworkParameters;
 import org.bitcoinj.params.TestNet3Params;
 import org.tb.bitcoinj.service.cli.RuntimeCLIController;
+import org.tb.bitcoinj.service.jsonrpc.JSONRPCManager;
 import org.tb.bitcoinj.service.server.ServerWalletAppKit;
 import org.tb.bitcoinj.service.server.ServerWalletFacade;
 
@@ -37,8 +38,6 @@ public class StartUp {
 		// Have a look at the WalletAppKit documentation and its source to understand what's happening behind the scenes: https://github.com/bitcoinj/bitcoinj/blob/master/core/src/main/java/org/bitcoinj/kits/WalletAppKit.java
 		final ServerWalletAppKit serverWalletAppKit = new ServerWalletAppKit(params, new File("."), "walletappkit-server");
 		
-		final RuntimeCLIController runtimeCLIController = new RuntimeCLIController(new ServerWalletFacade(serverWalletAppKit), System.in);
-		
 		// In case you want to connect with your local bitcoind tell the kit to connect to localhost.
 		// You must do that in reg test mode.
 		//kit.connectToLocalHost();
@@ -52,6 +51,15 @@ public class StartUp {
 		// Ready to run. The kit syncs the blockchain and our wallet event listener gets notified when something happens.
 		// To test everything we create and print a fresh receiving address. Send some coins to that address and see if everything works.
 		System.out.println("send money to: " + serverWalletAppKit.wallet().freshReceiveAddress().toString());
+
+		// Create facade
+		final ServerWalletFacade facade = new ServerWalletFacade(serverWalletAppKit);
+		
+		// Create CLI interface
+		final RuntimeCLIController runtimeCLIController = new RuntimeCLIController(facade, System.in);
+
+		// Create JSON RPC Interface
+		final JSONRPCManager jsonrpcManager = new JSONRPCManager(facade, 33333);
 	}
 }
 
